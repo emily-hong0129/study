@@ -12,4 +12,4 @@ function firstCharacter(str) {  // 'hello word'
     result += word[i][0]
   }
   return result;
-}
+} 

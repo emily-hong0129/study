@@ -7,4 +7,4 @@ function transformFirstAndLast(arr) {
     result[arr[0]] = arr[arr.length - 1];
     return result;
   }
-}
+} 

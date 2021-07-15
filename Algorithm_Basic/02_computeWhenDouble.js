@@ -11,4 +11,4 @@ function computeWhenDouble(interestRate) {
     }
   }
   return year;
-}
+} 

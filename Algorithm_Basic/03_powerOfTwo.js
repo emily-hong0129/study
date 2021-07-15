@@ -9,4 +9,4 @@ function powerOfTwo(num) {
   }
 
   return pow === num
-}
+} 

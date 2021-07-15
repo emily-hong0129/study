@@ -11,3 +11,4 @@ function convertDoubleSpaceToSingle(str) {
   }
   return newStr.slice(1);
 }
+ 

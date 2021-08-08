@@ -4,6 +4,9 @@ const app = express();
 
 let fs = require('fs');
 let template = require('./lib/template.js');
+let path = require('path');
+let sanitizeHtml = require('sanitize-html');
+let qs = require('querystring');
 
 const port = 3000;
 
@@ -23,13 +26,77 @@ app.get('/', (request, response) => {
   });
 })
 
-app.get('/page/:pageId/:chapterId', (request, response) => {
-  return response.send(request.params); 
+// app.get('/page/:pageId/:chapterId', (request, response) => {
+  // return response.send(request.params); 
   /*
     localhost:3000/page/what/the
     {"pageId": "HTML", "chapterId": "the"}
-  */ 
+  */
+// }
+
+app.get('/page/:pageId', (request, response) => {
+  fs.readdir('./data', function(error, filelist){
+    var filteredId = path.parse(request.params.pageId).base;
+    fs.readFile(`data/${filteredId}`, 'utf8', function(err, description){
+      var title = request.params.pageId;
+      var sanitizedTitle = sanitizeHtml(title);
+      var sanitizedDescription = sanitizeHtml(description, {
+        allowedTags:['h1']
+      });
+      var list = template.list(filelist);
+      var html = template.HTML(sanitizedTitle, list,
+        `<h2>${sanitizedTitle}</h2>${sanitizedDescription}`,
+        ` <a href="/create">create</a>
+          <a href="/update/${sanitizedTitle}">update</a>
+          <form action="delete_process" method="post">
+            <input type="hidden" name="id" value="${sanitizedTitle}">
+            <input type="submit" value="delete">
+          </form>`
+      );
+      response.send(html);
+    });
+  });
 })
+
+app.get('/create', (request, response) => {
+  fs.readdir('./data', function(error, filelist){
+    var title = 'WEB - create';
+    var list = template.list(filelist);
+    var html = template.HTML(title, list, `
+      <form action="/create" method="post">
+        <p><input type="text" name="title" placeholder="title"></p>
+        <p>
+          <textarea name="description" placeholder="description"></textarea>
+        </p>
+        <p>
+          <input type="submit">
+        </p>
+      </form>
+    `, '');
+    response.send(html)
+  });
+})
+
+app.post('/create_process', (request, response) => {
+  var body = '';
+      request.on('data', function(data){
+          body = body + data;
+      });
+      request.on('end', function(){
+          var post = qs.parse(body);
+          var title = post.title;
+          var description = post.description;
+          fs.writeFile(`data/${title}`, description, 'utf8', function(err){
+            response.writeHead(302, {Location: `/?id=${title}`});
+            response.end();
+          })
+      });
+})
+
+app.get('/update/:pageId', (request, response) => {
+
+});
+
 
 app.listen(port, () => console.log(`Example app listening on port ${port}`));
 

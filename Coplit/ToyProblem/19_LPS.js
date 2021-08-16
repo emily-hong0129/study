@@ -1,6 +1,5 @@
+/*
 const LPS = function (str) {
-  // TODO: 여기에 코드를 작성합니다.
-  // 정규식을 사용하면 간단해짐??
   // aaaabaaaa => 4
   // aaaaa => 2 
   // aaaaa => 5
@@ -20,11 +19,19 @@ const LPS = function (str) {
 
   return result.length;
 };
+*/
 
-// // 정규식
-// const LPS = function (str) {
-//   const result = str.match(/(\w*).*\1/);
-//   return result[1].length;
-// };
+const LPS = function (str) {
+  let max= 0; // 가장 큰 값을 리턴하기 위해
+  let half = Math.floor(str.length / 2);
+
+  for(let i = 0; i <= half; i++){
+    if(str.slice(0, i) === str.slice(-i)){  // 
+      if(max < i) max = i;
+    }
+  }
+  
+  return max;
+}
 
 

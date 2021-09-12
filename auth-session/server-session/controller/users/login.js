@@ -1,6 +1,5 @@
 // 해당 모델의 인스턴스를 models/index.js에서 가져옵니다.
 const { Users } = require('../../models');
-const session = require('express-session');
 
 module.exports = {
   post: async (req, res) => {
@@ -9,18 +8,21 @@ module.exports = {
     const userInfo = await Users.findOne({
       where: { userId: req.body.userId, password: req.body.password },
     });
-    // console.log(userInfo)
+
+    // console.log('--------------',userInfo)
 
     // TODO: userInfo 결과 존재 여부에 따라 응답을 구현하세요.
     // 결과가 존재하는 경우 세션 객체에 userId가 저장되어야 합니다.
-    if (!userInfo) {  // 로그인 안됨
+    if (!userInfo) {  // user의 정보가 들어오지 않았다면
       // your code here
-      res.status(404).json({message: 'not authorized'})
-    } else {  // 로그인 됨
+      res.status(400).json({message: `not authorized`})
+
+    } else {  // user의 정보가 들어왔다면
       // your code here
       // HINT: req.session을 사용하세요.
       req.session.userId = userInfo.userId
-      res.json({message: 'ok'})
+      res.status(200).json({message: 'ok'})
+
     }
   }
 }

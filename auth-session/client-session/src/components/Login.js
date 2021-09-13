@@ -1,5 +1,5 @@
+import axios from 'axios';
 import React, { Component } from 'react';
-const axios = require('axios');
 
 class Login extends Component {
   constructor(props) {
@@ -25,20 +25,16 @@ class Login extends Component {
     //
     // 사용자 정보를 받아온 후
     // - props로 전달받은 함수를 호출해, 사용자 정보를 변경하세요.
+    axios
+      .post('https://localhost:4000/users/login')
+      .then((res) => {
+        this.props.loginHandler()
+        // 로그인 정보 받아옴
+        axios
+          .get('https://localhost:4000/users/userinfo')
+          .then((res) => this.props.setUserInfo())
 
-    axios.post('https://localhost:4000/users/login', {userId : this.state.username, password: this.state.password})
-    .then((res) => {
-      // console.log(res)
-      // 로그인 실행 (props로 전달받은 함수를 호출해, 로그인 상태를 변경하세요.)
-      this.props.loginHandler()
-      // 로그인 정보를 받아와야함
-      axios.get('https://localhost:4000/users/userinfo')
-        .then((res) => {
-          console.log(res.data.data)  // 최종 데이터에 접근
-          this.props.setUserInfo(res.data.data)
-        })
-    })
-
+      })
 
   }
 

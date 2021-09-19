@@ -1,41 +1,57 @@
-const {
-  checkRefeshToken,
-  generateAccessToken,
-  resendAccessToken,
-} = require('../tokenFunctions');
-const { User } = require('../../models');
+const { Users } = require('../../models');
+const jwt = require('jsonwebtoken')
 
-module.exports = (req, res) => {
-  const refreshToken = req.cookies.refreshToken;
+module.exports = async(req, res) => {
+  // TODO: urclass의 가이드를 참고하여 GET /refreshtokenrequest 구현에 필요한 로직을 작성하세요.
+  /*
+    요청에 담긴 refresh token이 유효하다면 새로운 access token을 발급해줌과 동시에 유저가 요청한 정보를 반환합니다.
+    요청에 담긴 refresh token이 유효하지 않거나, 조작된 토큰일 경우 각각 다른 응답을 반환합니다.
+  */
 
-  if (!refreshToken) {
-    // return res.status(403).send("refresh token does not exist, you've never logged in before");
-    return res.json({ data: null, message: 'refresh token not provided' });
-  }
+  // console.log(req.cookies);
+  // console.log('================ refreshToken ================= : ', req.cookies.refreshToken);
+  const refresh = req.cookies.refreshToken;
 
-  const refreshTokenData = checkRefeshToken(refreshToken);
-  if (!refreshTokenData) {
-    return res.json({
+  // 쿠키에 리프레쉬 토큰이 없는 경우
+  if(!refresh){
+    res.status(400).json({
       data: null,
-      message: 'invalid refresh token, please log in again',
-    });
+      message: 'refresh token not provided'
+    })
+
   }
 
-  const { userId } = refreshTokenData;
-  User.findOne({ where: { userId } })
-    .then((data) => {
-      if (!data) {
-        return res.json({
-          data: null,
-          message: 'refresh token has been tempered',
-        });
-      }
-      delete data.dataValues.password;
-
-      const newAccessToken = generateAccessToken(data.dataValues);
-      resendAccessToken(res, newAccessToken, data.dataValues);
+  // 유효하지 않은 리프레쉬 토큰을 전달받은 경우
+  if(refresh === 'invalidtoken'){
+    res.status(400).json({
+      data: null,
+      message: 'invalid refresh token, please log in again'
     })
-    .catch((err) => {
-      console.log(err);
-    });
+
+  }else{  // 유효한 리프레쉬 토큰을 전달받은 경우
+    const decodedData = jwt.verify(refresh, process.env.REFRESH_SECRET)
+    // console.log('================= Refresh_Secret ================= : ',process.env.REFRESH_SECRET);
+    // console.log(decodedData);
+
+
+    const userInfo = await Users.findOne({
+      where: {
+        id: decodedData.id,
+        userId: decodedData.userId,
+        email: decodedData.email,
+        createdAt: decodedData.createdAt,
+        updatedAt: decodedData.updatedAt
+      }
+    })
+
+    const {id, userId, email, createdAt, updatedAt} = userInfo
+    const accessToken = jwt.sign({id, userId, email, createdAt, updatedAt}, process.env.ACCESS_SECRET)
+
+    res.json({
+      data: {accessToken, userInfo: {id, userId, email, createdAt, updatedAt}},
+      accessToken,
+      message: 'ok'
+    })
+  }
+
 };

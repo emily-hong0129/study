@@ -28,7 +28,8 @@ module.exports = async(req, res) => {
       message: 'invalid refresh token, please log in again'
     })
 
-  }else{  // 유효한 리프레쉬 토큰을 전달받은 경우
+  }
+  // 유효한 리프레쉬 토큰을 전달받은 경우
     const decodedData = jwt.verify(refresh, process.env.REFRESH_SECRET)
     // console.log('================= Refresh_Secret ================= : ',process.env.REFRESH_SECRET);
     // console.log(decodedData);
@@ -52,6 +53,5 @@ module.exports = async(req, res) => {
       accessToken,
       message: 'ok'
     })
-  }
 
 };
